@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國中英語第一次月考線上模擬測驗 (大家說英語 Unit 1 - Unit 3)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f3f4f6;
+        }
+        .custom-radio input[type="radio"]:checked + label {
+            background-color: #eff6ff;
+            border-color: #3b82f6;
+            color: #1e40af;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="text-gray-800 min-h-screen flex flex-col justify-between">
+
+    <!-- Header -->
+    <header class="bg-indigo-700 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold">115學年度 國中英語第一學期第一次月考線上測驗</h1>
+                <p class="text-indigo-200 text-sm mt-1">測驗範圍：《大家說英語》Unit 1 Who's Paying? / Unit 2 Seeing Seoul / Unit 3 Time for Lunch!</p>
+            </div>
+            <div id="timer-box" class="mt-3 md:mt-0 bg-indigo-800 px-4 py-2 rounded-lg text-center border border-indigo-500">
+                <span class="text-xs text-indigo-300 block">已用時間</span>
+                <span id="timer" class="text-xl font-mono font-bold text-yellow-300">00:00</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-5xl mx-auto px-4 py-8 flex-grow w-full">
+
+        <!-- Student Info Card -->
+        <div id="info-card" class="bg-white rounded-xl shadow-md p-6 mb-6">
+            <h2 class="text-lg font-bold text-gray-700 mb-4 border-b pb-2 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                考生基本資料
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">班級</label>
+                    <input type="text" id="student-class" placeholder="例：801" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">座號</label>
+                    <input type="text" id="student-number" placeholder="例：05" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">姓名</label>
+                    <input type="text" id="student-name" placeholder="請輸入姓名" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Summary Board (Hidden initially) -->
+        <div id="result-board" class="hidden bg-white rounded-xl shadow-lg p-6 mb-8 border-t-4 border-indigo-600">
+            <div class="text-center">
+                <h2 class="text-2xl font-extrabold text-gray-800">測驗成績結算</h2>
+                <p class="text-gray-500 text-sm mt-1" id="result-student-info"></p>
+                
+                <div class="flex justify-center items-center my-6 gap-6 flex-wrap">
+                    <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 min-w-[160px]">
+                        <span class="text-sm font-semibold text-indigo-600 block">總得分</span>
+                        <span id="score-text" class="text-5xl font-extrabold text-indigo-700">0</span>
+                        <span class="text-xs text-gray-400 block mt-1">滿分 100 分</span>
+                    </div>
+                    <div class="bg-green-50 border border-green-100 rounded-2xl p-6 min-w-[160px]">
+                        <span class="text-sm font-semibold text-green-600 block">答對題數</span>
+                        <span id="correct-count" class="text-4xl font-extrabold text-green-700">0</span>
+                        <span class="text-xs text-gray-400 block mt-1">共 50 題</span>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-100 rounded-2xl p-6 min-w-[160px]">
+                        <span class="text-sm font-semibold text-amber-600 block">評語與等第</span>
+                        <span id="grade-text" class="text-3xl font-extrabold text-amber-700">--</span>
+                        <span id="eval-text" class="text-xs text-gray-500 block mt-1">--</span>
+                    </div>
+                </div>
+
+                <!-- Filter Mode Buttons -->
+                <div class="flex justify-center gap-3 mt-4">
+                    <button id="btn-show-all" onclick="filterQuestions('all')" class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg shadow hover:bg-indigo-700 transition">顯示全部題目</button>
+                    <button id="btn-show-wrong" onclick="filterQuestions('wrong')" class="px-4 py-2 bg-red-100 text-red-700 text-sm font-semibold rounded-lg border border-red-200 hover:bg-red-200 transition">僅顯示錯題檢討</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exam Progress Status Bar -->
+        <div id="progress-bar-container" class="bg-white rounded-lg p-4 shadow-sm mb-6 flex justify-between items-center text-sm text-gray-600">
+            <div>
+                <span>已完成：<strong id="answered-count" class="text-indigo-600 font-bold">0</strong> / 50 題</span>
+            </div>
+            <div class="w-1/2 bg-gray-200 h-2.5 rounded-full overflow-hidden">
+                <div id="progress-bar" class="bg-indigo-600 h-full w-0 transition-all duration-300"></div>
+            </div>
+        </div>
+
+        <!-- Question List Container -->
+        <form id="quiz-form">
+            <div id="questions-container" class="space-y-6">
+                <!-- Questions will be rendered dynamically by JavaScript -->
+            </div>
+
+            <!-- Submit Button Area -->
+            <div id="submit-area" class="mt-8 text-center bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                <p class="text-sm text-gray-500 mb-4">請仔細檢查所有答案，確認無誤後點擊下方按鈕交卷。</p>
+                <button type="button" onclick="submitExam()" class="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-0.5">
+                    提交試卷並自動批改
+                </button>
+            </div>
+        </form>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-400 py-6 text-center text-sm border-t border-gray-700">
+        <p>大家說英語 2026 年 9 月號 Unit 1-3 國中英文月考模擬題庫</p>
+        <p class="text-xs text-gray-500 mt-1">全卷 50 題選擇題，每題 2 分，滿分 100 分。</p>
+    </footer>
+
+    <!-- JavaScript Quiz Logic -->
+    <script>
+        // 50 Questions Data Source
+        const quizData = [
+            // 一、字彙與片語選擇 (Q1 - Q15)
+            {
+                id: 1,
+                section: "一、字彙與片語選擇 (每題 2 分)",
+                question: "Let's ________ the bill equally. Everyone pays $150.",
+                options: ["order", "split", "cook", "visit"],
+                answer: 1,
+                rationale: "解析：split the bill 代表「平分帳單」。根據後半句「每人付 150 元」，應填入 split。"
+            },
+            {
+                id: 2,
+                section: "一、字彙與片語選擇 (每題 2 分)",
+                question: "Don't worry about the money today. It is my ________!",
+                options: ["treat", "ticket", "subway", "palace"],
+                answer: 0,
+                rationale: "解析：It is my treat! 代表「今天我請客！」。Unit 1 核心句型。"
+            },
+            {
+                id: 3,
+                section: "一、字彙與片語選擇 (每題 2 分)",
+                question: "Seoul is the capital city of South Korea and is famous for its lively ________.",
+                options: ["wallet", "markets", "receipts", "lunches"],
+                answer: 1,
+                rationale: "解析：markets 代表「市場」。首爾以廣藏市場、明洞等熱鬧市場聞名。"
+            },
+            {
+                id: 4,
+                section: "一、字彙與片語選擇 (每題 2 分)",
+                question: "Remember to take your ________ after you pay at the cashier.",
+                options: ["receipt", "palace", "tourist", "soup"],
+                answer: 0,
+                rationale: "解析：receipt 代表「收據、發票」。在櫃檯付完錢後要記得拿收據。"
+            },
+            {
+                id: 5,
+                section: "一、字彙與片語選擇 (每題 2 分)",
+                question: "We can take the ________ to travel around Seoul fast and easily.",
+                options: ["sandwich", "subway", "dessert", "bill"],
+                answer: 1,
+                rationale: "解析：subway 代表「地鐵/捷運」。搭地鐵遊覽首爾既快速又便利。"
+            },
+            {
+                id: 6,
+                section: "一、字彙與片語選擇 (每題 2 分)",
+                question: "Are you ready to ________ your meal, or do you need a few more minutes?",
+                options: ["order", "pay", "share", "arrive"],
+                answer: 0,
+                rationale: "解析：order a meal 代表「點餐」。語意為「您準備好要點餐了嗎？」。"
+            },
+            {
+                id: 7,
+                section: "一、字彙與片語選擇 (每題 2 分)",
+                question: "Kimchi is a famous ________ food in Korea. Almost everyone eats it.",
+                options: ["traditional", "expensive", "hungry", "scary"],
+                answer: 0,
+                rationale: "解析：traditional 代表「傳統的」。泡菜（Kimchi）是韓國著名的傳統食物。"
+            },
+            {
+                id: 8,
+                section: "一、字彙與片語選擇 (每題 2 分)",
+                question: "I forgot to bring my ________, so I can't pay for the food right now.",
+                options: ["subway", "wallet", "palace", "lunchbox"],
+                answer: 1,
+                rationale: "解析：wallet 代表「錢包」。忘記帶錢包所以無法付餐費。"
+            },
+            {
+                id: 9,
+                section: "一、字彙與片語選擇 (每題 2 分)",
+                question: "Eating too much ________ food like chips is bad for your health.",
+                options: ["junk", "fresh", "healthy", "green"],
+                answer: 0,
+                rationale: "解析：junk food 代表「垃圾食物/不健康食品」。吃太多洋洋洋芋片等垃圾食物有害健康。"
+            },
+            {
+                id: 10,
+                section: "一、字彙與片語選擇 (每題 2 分)",
+                question: "The waiter handed us the ________ so we could choose what to eat.",
+                options: ["menu", "ticket", "change", "tip"],
+                answer: 0,
+                rationale: "解析：menu 代表「菜單」。服務生遞上菜單供我們選擇點餐。"
+            },
+            {
+                id: 11,
+                section: "一、字彙與片語選擇 (每題 2 分)",
+                question: "Gyeongbokgung is an ancient ________ in Seoul that attracts millions of tourists.",
+                options: ["palace", "restaurant", "bakery", "supermarket"],
+                answer: 0,
+                rationale: "解析：palace 代表「皇宮/宮殿」。景福宮為首爾著名的古老宮殿。"
+            },
+            {
+                id: 12,
+                section: "一、字彙與片語選擇 (每題 2 分)",
+                question: "The soup smells so ________ that I can't wait to try it!",
+                options: ["delicious", "boring", "noisy", "dry"],
+                answer: 0,
+                rationale: "解析：delicious 代表「美味的/香噴噴的」。湯聞起來非常香美讓人迫不及待想品嚐。"
+            },
+            {
+                id: 13,
+                section: "一、字彙與片語選擇 (每題 2 分)",
+                question: "In some countries, it is polite to leave a ________ for good table service.",
+                options: ["tip", "bill", "dish", "menu"],
+                answer: 0,
+                rationale: "解析：tip 代表「小費」。在某些國家給小費是感謝良好服務的禮貌表現。"
+            },
+            {
+                id: 14,
+                section: "一、字彙與片語選擇 (每題 2 分)",
+                question: "My stomach is making noise because I am very ________.",
+                options: ["full", "hungry", "polite", "rich"],
+                answer: 1,
+                rationale: "解析：hungry 代表「飢餓的」。肚子咕嚕叫是因為非常飢餓。"
+            },
+            {
+                id: 15,
+                section: "一、字彙與片語選擇 (每題 2 分)",
+                question: "Many students bring a ________ to school for lunch every day.",
+                options: ["lunchbox", "passport", "subway", "receipt"],
+                answer: 0,
+                rationale: "解析：lunchbox 代表「便當/餐盒」。許多學生每天帶便當到學校吃午餐。"
+            },
+
+            // 二、文法與句型選擇 (Q16 - Q30)
+            {
+                id: 16,
+                section: "二、文法與句型選擇 (每題 2 分)",
+                question: "How about ________ fried chicken for lunch today?",
+                options: ["eat", "to eat", "eating", "eaten"],
+                answer: 2,
+                rationale: "解析：介系詞 about 後面接動名詞 (V-ing)，因此選擇 eating。How about + V-ing? 常用於提出提議。"
+            },
+            {
+                id: 17,
+                section: "二、文法與句型選擇 (每題 2 分)",
+                question: "It ________ about 20 minutes to get to N Seoul Tower by bus.",
+                options: ["takes", "spends", "costs", "pays"],
+                answer: 0,
+                rationale: "解析：虛主詞 It 表示「花費時間」時，動詞應搭配 takes (It takes + 時間 + to V)。"
+            },
+            {
+                id: 18,
+                section: "二、文法與句型選擇 (每題 2 分)",
+                question: "I ________ like to order a glass of iced tea, please.",
+                options: ["should", "would", "could", "must"],
+                answer: 1,
+                rationale: "解析：would like to + V 表示「想要…」，為禮貌點餐的標準表達方式。"
+            },
+            {
+                id: 19,
+                section: "二、文法與句型選擇 (每題 2 分)",
+                question: "There ________ many famous places to visit in Seoul.",
+                options: ["is", "are", "have", "has"],
+                answer: 1,
+                rationale: "解析：後方名詞 places 為複數，因此使用 There are 表示「有…」。不可用 have/has。"
+            },
+            {
+                id: 20,
+                section: "二、文法與句型選擇 (每題 2 分)",
+                question: "My brother ________ eats junk food because he prefers healthy living.",
+                options: ["seldom", "always", "usually", "often"],
+                answer: 0,
+                rationale: "解析：seldom 代表「很少/不常」。根據後半句「喜好健康生活」，可知他很少吃垃圾食物。"
+            },
+            {
+                id: 21,
+                section: "二、文法與句型選擇 (每題 2 分)",
+                question: "You ________ drink more water every day to stay healthy.",
+                options: ["should", "would", "might", "shall"],
+                answer: 0,
+                rationale: "解析：助動詞 should 表示「應該」，用於給予健康相關的建議。"
+            },
+            {
+                id: 22,
+                section: "二、文法與句型選擇 (每題 2 分)",
+                question: "May prefers eating noodles ________ eating rice for lunch.",
+                options: ["than", "to", "for", "with"],
+                answer: 1,
+                rationale: "解析：句型 prefer A to B 表示「比起 B 更喜歡 A」。中間介系詞須用 to。"
+            },
+            {
+                id: 23,
+                section: "二、文法與句型選擇 (每題 2 分)",
+                question: "Let's ________ a table near the window.",
+                options: ["find", "finding", "to find", "found"],
+                answer: 0,
+                rationale: "解析：Let's 後面接原形動詞 (VR)，因此選擇 find。"
+            },
+            {
+                id: 24,
+                section: "二、文法與句型選擇 (每題 2 分)",
+                question: "We ________ to a Korean restaurant last Sunday and enjoyed the food.",
+                options: ["go", "went", "going", "have gone"],
+                answer: 1,
+                rationale: "解析：時間副詞 last Sunday（上週日）為過去時間，動詞需用過去式 went。"
+            },
+            {
+                id: 25,
+                section: "二、文法與句型選擇 (每題 2 分)",
+                question: "How ________ sugar do you want in your black tea?",
+                options: ["many", "much", "few", "little"],
+                answer: 1,
+                rationale: "解析：sugar（糖）為不可數名詞，詢問數量時應使用 How much。"
+            },
+            {
+                id: 26,
+                section: "二、文法與句型選擇 (每題 2 分)",
+                question: "Tom paid for his meal, and I paid for ________.",
+                options: ["my", "me", "mine", "myself"],
+                answer: 2,
+                rationale: "解析：所有格代名詞 mine 代表 my meal（我的餐費），避免字詞重複。"
+            },
+            {
+                id: 27,
+                section: "二、文法與句型選擇 (每題 2 分)",
+                question: "The bibimbap here is ________ than the one we had yesterday.",
+                options: ["tasty", "tastier", "tastiest", "more tastier"],
+                answer: 1,
+                rationale: "解析：出現關鍵字 than 表示比較級，tasty 的比較級去 y 改 ier 為 tastier。"
+            },
+            {
+                id: 28,
+                section: "二、文法與句型選擇 (每題 2 分)",
+                question: "We usually meet for lunch ________ noon on weekdays.",
+                options: ["at", "on", "in", "for"],
+                answer: 0,
+                rationale: "解析：具體時間點 noon（中午）前搭配介系詞 at（at noon）。"
+            },
+            {
+                id: 29,
+                section: "二、文法與句型選擇 (每題 2 分)",
+                question: "The soup is ________ hot for the child to drink right now.",
+                options: ["so", "too", "very", "quite"],
+                answer: 1,
+                rationale: "解析：句型 too... to... 表示「太…以致於不能…」。"
+            },
+            {
+                id: 30,
+                section: "二、文法與句型選擇 (每題 2 分)",
+                question: "The food was ________ good that we cleaned all our plates.",
+                options: ["too", "so", "such", "very"],
+                answer: 1,
+                rationale: "解析：句型 so + 形容詞 + that 表示「如此…以致於…」。"
+            },
+
+            // 三、情境對話選擇 (Q31 - Q40)
+            {
+                id: 31,
+                section: "三、情境對話選擇 (每題 2 分)",
+                question: "A: Who's paying for lunch today?\nB: ________",
+                options: [
+                    "It's my treat today!",
+                    "I am very full, thank you.",
+                    "The food is delicious.",
+                    "We can take the subway."
+                ],
+                answer: 0,
+                rationale: "解析：問句詢問「今天誰付午餐錢？」，回答「今天我請客！」最符合情境。"
+            },
+            {
+                id: 32,
+                section: "三、情境對話選擇 (每題 2 分)",
+                question: "A: How do we get to Gyeongbokgung Palace?\nB: ________",
+                options: [
+                    "It is $20 per person.",
+                    "We can take Subway Line 3.",
+                    "Yes, it is very famous.",
+                    "I want to eat dumplings."
+                ],
+                answer: 1,
+                rationale: "解析：問句詢問「我們怎麼去景福宮？」，回答交通方式「我們可以搭地鐵3號線」最適當。"
+            },
+            {
+                id: 33,
+                section: "三、情境對話選擇 (每題 2 分)",
+                question: "A: Are you ready to order?\nB: ________",
+                options: [
+                    "Keep the change, please.",
+                    "Yes, I'd like a chicken sandwich.",
+                    "The bill is too high.",
+                    "No, I don't have a wallet."
+                ],
+                answer: 1,
+                rationale: "解析：服務生問「您準備好點餐了嗎？」，顧客回答「是的，我想要一份雞肉三明治。」"
+            },
+            {
+                id: 34,
+                section: "三、情境對話選擇 (每題 2 分)",
+                question: "A: The total comes to $600.\nB: Can we split the bill?\nA: ________",
+                options: [
+                    "No problem. That's $300 each.",
+                    "I don't like Korean food.",
+                    "Here is your menu.",
+                    "The subway is over there."
+                ],
+                answer: 0,
+                rationale: "解析：顧客要求「我們可以平分帳單嗎？」，店家回應「沒問題，每人 300 元。」邏輯正確。"
+            },
+            {
+                id: 35,
+                section: "三、情境對話選擇 (每題 2 分)",
+                question: "A: What is Seoul famous for?\nB: ________",
+                options: [
+                    "It takes two hours by plane.",
+                    "It is famous for K-pop and great food.",
+                    "I went there three years ago.",
+                    "Yes, I like travel very much."
+                ],
+                answer: 1,
+                rationale: "解析：問句詢問「首爾以什麼聞名？」，回答「它以 K-pop（韓國流行音樂）和美食聞名。」"
+            },
+            {
+                id: 36,
+                section: "三、情境對話選擇 (每題 2 分)",
+                question: "A: Would you like some dessert after lunch?\nB: ________",
+                options: [
+                    "No, thanks. I'm really full.",
+                    "Yes, here is the receipt.",
+                    "The dessert is $500.",
+                    "Let's split the bill now."
+                ],
+                answer: 0,
+                rationale: "解析：對方問「午餐後要來點甜點嗎？」，禮貌婉拒「不用了，謝謝。我真的很飽了。」"
+            },
+            {
+                id: 37,
+                section: "三、情境對話選擇 (每題 2 分)",
+                question: "A: Here is your change and receipt, sir.\nB: ________",
+                options: [
+                    "It's on me!",
+                    "Thank you very much.",
+                    "I want to order now.",
+                    "Where is the palace?"
+                ],
+                answer: 1,
+                rationale: "解析：店員找零並遞上發票時，顧客應禮貌回答「非常感謝你。」"
+            },
+            {
+                id: 38,
+                section: "三、情境對話選擇 (每題 2 分)",
+                question: "A: What do you usually have for lunch at school?\nB: ________",
+                options: [
+                    "I usually eat a lunchbox from home.",
+                    "I take the bus to school.",
+                    "Lunch time is at 12:00.",
+                    "It takes me 10 minutes."
+                ],
+                answer: 0,
+                rationale: "解析：問句詢問「你在學校午餐通常吃什麼？」，回答「我通常吃家裡帶來的便當。」"
+            },
+            {
+                id: 39,
+                section: "三、情境對話選擇 (每題 2 分)",
+                question: "A: Do you have any recommendations on the menu?\nB: ________",
+                options: [
+                    "Our beef soup is very popular.",
+                    "The station is across the street.",
+                    "I lost my wallet yesterday.",
+                    "You can pay by credit card."
+                ],
+                answer: 0,
+                rationale: "解析：顧客詢問「菜單上有推薦的嗎？」，店員推薦「我們的牛肉湯非常受歡迎。」"
+            },
+            {
+                id: 40,
+                section: "三、情境對話選擇 (每題 2 分)",
+                question: "A: Here is $50. Keep the change!\nB: ________",
+                options: [
+                    "You're welcome. Have a nice day!",
+                    "Thank you so much, sir!",
+                    "I am not hungry at all.",
+                    "Let's order more food."
+                ],
+                answer: 1,
+                rationale: "解析：顧客說「不用找零了！(Keep the change)」，店員應高興地表達謝意：「非常感謝您，先生！」"
+            },
+
+            // 四、綜合閱讀測驗 (Q41 - Q50)
+            {
+                id: 41,
+                section: "四、閱讀理解測驗 (每題 2 分)\n【閱讀一：題號 41-43】",
+                question: "【Reading 1】\nLast Friday, Peter and his three friends went to a new restaurant. They ordered pizza, fried chicken, and green salad. The food was delicious. When the meal was over, the waiter brought the bill. It came to $1,200. Peter offered to pay for everything, but his friends insisted on splitting the bill equally. In the end, each person paid $300.\n\nQ: How many people went to the restaurant altogether?",
+                options: ["3 people", "4 people", "5 people", "6 people"],
+                answer: 1,
+                rationale: "解析：文章提到「Peter and his three friends」（Peter 與他的三位朋友），因此總共有 4 個人。"
+            },
+            {
+                id: 42,
+                section: "四、閱讀理解測驗 (每題 2 分)\n【閱讀一：題號 41-43】",
+                question: "Q: How much did each person pay in the end?",
+                options: ["$200", "$300", "$400", "$1,200"],
+                answer: 1,
+                rationale: "解析：內文指出「In the end, each person paid $300.」（最後每人付了 300 元）。"
+            },
+            {
+                id: 43,
+                section: "四、閱讀理解測驗 (每題 2 分)\n【閱讀一：題號 41-43】",
+                question: "Q: Which statement is TRUE according to the passage?",
+                options: [
+                    "Peter paid the whole bill by himself.",
+                    "The food was terrible.",
+                    "They split the bill equally.",
+                    "They went to the restaurant on Saturday."
+                ],
+                answer: 2,
+                rationale: "解析：文章明確提到「his friends insisted on splitting the bill equally」，表示他們平分了帳單。"
+            },
+            {
+                id: 44,
+                section: "四、閱讀理解測驗 (每題 2 分)\n【閱讀二：題號 44-47】",
+                question: "【Reading 2】\nSeoul is a fantastic destination for travelers. Taking the subway is the best way to get around the city because it is clean, fast, and convenient. Visitors can visit historical palaces like Gyeongbokgung during the day, and shop at local traditional markets at night. Also, trying local food like bibimbap and rice cakes is a must for every tourist!\n\nQ: What is recommended as the best way to travel around Seoul?",
+                options: ["Taking a taxi", "Taking the subway", "Renting a bicycle", "Walking"],
+                answer: 1,
+                rationale: "解析：文章寫道「Taking the subway is the best way to get around the city...」。"
+            },
+            {
+                id: 45,
+                section: "四、閱讀理解測驗 (每題 2 分)\n【閱讀二：題號 44-47】",
+                question: "Q: What can tourists do at night in Seoul according to the text?",
+                options: [
+                    "Visit historical palaces",
+                    "Shop at local traditional markets",
+                    "Take a flight home",
+                    "Cook bibimbap at school"
+                ],
+                answer: 1,
+                rationale: "解析：文章寫道「...and shop at local traditional markets at night.」（晚上可以逛當地傳統市場）。"
+            },
+            {
+                id: 46,
+                section: "四、閱讀理解測驗 (每題 2 分)\n【閱讀二：題號 44-47】",
+                question: "Q: Why is the subway recommended for travelers in Seoul?",
+                options: [
+                    "It is free for all tourists.",
+                    "It is clean, fast, and convenient.",
+                    "It serves hot food on board.",
+                    "It goes to other countries."
+                ],
+                answer: 1,
+                rationale: "解析：文章說明推薦地鐵的原因為「because it is clean, fast, and convenient.」。"
+            },
+            {
+                id: 47,
+                section: "四、閱讀理解測驗 (每題 2 分)\n【閱讀二：題號 44-47】",
+                question: "Q: The word \"destination\" in the passage means a place where people ________.",
+                options: ["travel to", "sleep all day", "sell cars", "study math"],
+                answer: 0,
+                rationale: "解析：destination 意思是「目的地/旅遊地點」，即人們去旅行的目的地 (travel to)。"
+            },
+            {
+                id: 48,
+                section: "四、閱讀理解測驗 (每題 2 分)\n【閱讀三：題號 48-50】",
+                question: "【Reading 3】\nHaving a balanced lunch gives students energy to study and play in the afternoon. A good lunch should include fresh vegetables, meat or fish, and rice or bread. Drinking water instead of sugary drinks is also very important. Eating too much fast food makes people feel tired easily during class.\n\nQ: What is the main idea of this passage?",
+                options: [
+                    "How to cook pizza at home",
+                    "The importance of a balanced lunch for students",
+                    "Where to buy fast food near school",
+                    "Why exercise is good for health"
+                ],
+                answer: 1,
+                rationale: "解析：全文圍繞「營養均衡的午餐對學生的重要性」展開說明。"
+            },
+            {
+                id: 49,
+                section: "四、閱讀理解測驗 (每題 2 分)\n【閱讀三：題號 48-50】",
+                question: "Q: What should students drink according to the passage?",
+                options: ["Sugary drinks", "Water", "Coffee", "Black tea"],
+                answer: 1,
+                rationale: "解析：文中強調「Drinking water instead of sugary drinks is also very important.」（喝水而非含糖飲料非常重要）。"
+            },
+            {
+                id: 50,
+                section: "四、閱讀理解測驗 (每題 2 分)\n【閱讀三：題號 48-50】",
+                question: "Q: What happens if students eat too much fast food for lunch?",
+                options: [
+                    "They get better grades in math.",
+                    "They feel tired easily in class.",
+                    "They become faster runners.",
+                    "They save a lot of money."
+                ],
+                answer: 1,
+                rationale: "解析：末句指出「Eating too much fast food makes people feel tired easily during class.」（吃太多速食容易在課堂上感到疲倦）。"
+            }
+        ];
+
+        // State variables
+        let userAnswers = {};
+        let isSubmitted = false;
+        let timerInterval;
+        let secondsElapsed = 0;
+
+        // Initialize Timer
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                secondsElapsed++;
+                const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+                const secs = String(secondsElapsed % 60).padStart(2, '0');
+                document.getElementById('timer').textContent = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        // Render Questions
+        function renderQuiz() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+
+            let currentSection = "";
+
+            quizData.forEach((q, index) => {
+                // Section Header
+                if (q.section !== currentSection) {
+                    currentSection = q.section;
+                    const sectionHeader = document.createElement('div');
+                    sectionHeader.className = "bg-indigo-100 border-l-4 border-indigo-600 p-4 rounded-r-lg mt-8 mb-4";
+                    sectionHeader.innerHTML = `<h2 class="text-indigo-900 font-bold text-lg">${currentSection}</h2>`;
+                    container.appendChild(sectionHeader);
+                }
+
+                // Question Card
+                const card = document.createElement('div');
+                card.id = `q-card-${q.id}`;
+                card.className = "question-card bg-white rounded-xl shadow-sm border border-gray-200 p-6 transition hover:shadow-md";
+
+                // Format Question text
+                const formattedQuestion = q.question.replace(/\n/g, '<br>');
+
+                let optionsHTML = '';
+                const optionLabels = ['A', 'B', 'C', 'D'];
+
+                q.options.forEach((opt, optIdx) => {
+                    optionsHTML += `
+                        <div class="custom-radio mt-2">
+                            <input type="radio" id="q${q.id}_opt${optIdx}" name="question_${q.id}" value="${optIdx}" onchange="selectAnswer(${q.id}, ${optIdx})" class="hidden" ${isSubmitted ? 'disabled' : ''}>
+                            <label for="q${q.id}_opt${optIdx}" class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition text-gray-700">
+                                <span class="w-7 h-7 flex justify-center items-center rounded-full border border-gray-300 font-semibold text-xs mr-3 text-gray-500 bg-white">${optionLabels[optIdx]}</span>
+                                <span class="text-base">${opt}</span>
+                            </label>
+                        </div>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="inline-block bg-gray-100 text-gray-700 font-bold px-3 py-1 rounded-full text-xs">第 ${q.id} 題</span>
+                        <span id="badge-${q.id}" class="hidden text-xs font-bold px-2 py-1 rounded"></span>
+                    </div>
+                    <div class="text-gray-800 font-medium text-base mb-4 leading-relaxed">${formattedQuestion}</div>
+                    <div class="space-y-1">${optionsHTML}</div>
+                    <div id="rationale-${q.id}" class="hidden mt-4 p-4 rounded-lg bg-blue-50 border border-blue-200 text-sm text-blue-900 leading-relaxed">
+                        <strong class="font-bold block mb-1">【答案與解析】</strong>
+                        <p class="text-gray-700 mb-1">正確答案：<span class="font-bold text-green-600">${optionLabels[q.answer]}</span> (${q.options[q.answer]})</p>
+                        <p>${q.rationale}</p>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // Handle Answer Selection
+        function selectAnswer(questionId, optionIndex) {
+            if (isSubmitted) return;
+            userAnswers[questionId] = optionIndex;
+            updateProgressBar();
+        }
+
+        // Update Progress Bar
+        function updateProgressBar() {
+            const count = Object.keys(userAnswers).length;
+            document.getElementById('answered-count').textContent = count;
+            const percentage = (count / quizData.length) * 100;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+        }
+
+        // Submit and Auto-Grade
+        function submitExam() {
+            const answeredCount = Object.keys(userAnswers).length;
+            if (answeredCount < quizData.length) {
+                const confirmSubmit = confirm(`您還有 ${quizData.length - answeredCount} 道題目尚未作答！確定要提前交卷嗎？`);
+                if (!confirmSubmit) return;
+            } else {
+                if (!confirm("確定要提交試卷並進行自動批改嗎？")) return;
+            }
+
+            // Stop timer
+            clearInterval(timerInterval);
+            isSubmitted = true;
+
+            // Calculate score
+            let correctCount = 0;
+            const optionLabels = ['A', 'B', 'C', 'D'];
+
+            quizData.forEach(q => {
+                const userAns = userAnswers[q.id];
+                const card = document.getElementById(`q-card-${q.id}`);
+                const badge = document.getElementById(`badge-${q.id}`);
+                const rationaleBox = document.getElementById(`rationale-${q.id}`);
+
+                // Disable radio buttons
+                const radios = document.getElementsByName(`question_${q.id}`);
+                radios.forEach(r => r.disabled = true);
+
+                rationaleBox.classList.remove('hidden');
+                badge.classList.remove('hidden');
+
+                if (userAns === q.answer) {
+                    correctCount++;
+                    card.classList.add('border-green-300', 'bg-green-50/20');
+                    badge.textContent = "答對";
+                    badge.className = "text-xs font-bold px-2.5 py-1 rounded bg-green-100 text-green-700 border border-green-300";
+                } else {
+                    card.classList.add('border-red-300', 'bg-red-50/20');
+                    badge.textContent = "答錯";
+                    badge.className = "text-xs font-bold px-2.5 py-1 rounded bg-red-100 text-red-700 border border-red-300";
+
+                    // Highlight user incorrect choice
+                    if (userAns !== undefined) {
+                        const userOptLabel = card.querySelector(`label[for="q${q.id}_opt${userAns}"]`);
+                        if (userOptLabel) {
+                            userOptLabel.classList.add('border-red-400', 'bg-red-50', 'text-red-700');
+                        }
+                    }
+                }
+
+                // Highlight correct choice label
+                const correctOptLabel = card.querySelector(`label[for="q${q.id}_opt${q.answer}"]`);
+                if (correctOptLabel) {
+                    correctOptLabel.classList.add('border-green-500', 'bg-green-100', 'text-green-800', 'font-bold');
+                }
+            });
+
+            // Calculate Score (Each question 2 points, max 100)
+            const finalScore = correctCount * 2;
+
+            // Display Results
+            document.getElementById('result-board').classList.remove('hidden');
+            document.getElementById('submit-area').classList.add('hidden');
+            document.getElementById('score-text').textContent = finalScore;
+            document.getElementById('correct-count').textContent = correctCount;
+
+            // Get Student Info
+            const sClass = document.getElementById('student-class').value || '未填寫';
+            const sNum = document.getElementById('student-number').value || '未填寫';
+            const sName = document.getElementById('student-name').value || '考生';
+            document.getElementById('result-student-info').textContent = `考生：${sClass} 班 ${sNum} 號 ${sName} | 完成時間：${document.getElementById('timer').textContent}`;
+
+            // Grade evaluation
+            let grade = "";
+            let eval = "";
+            if (finalScore >= 90) {
+                grade = "A+ 卓越";
+                eval = "太棒了！對 Unit 1-3 內容掌握度極高！";
+            } else if (finalScore >= 80) {
+                grade = "A 優良";
+                eval = "表現優異，請保持良好的學習習慣！";
+            } else if (finalScore >= 70) {
+                grade = "B 良好";
+                eval = "基礎紮實，錯題請多加複習！";
+            } else if (finalScore >= 60) {
+                grade = "C 及格";
+                eval = "已達及格標準，建議加強單字與文法！";
+            } else {
+                grade = "D 待加強";
+                eval = "建議再次研讀第 1 至 3 單元單字句型！";
+            }
+            document.getElementById('grade-text').textContent = grade;
+            document.getElementById('eval-text').textContent = eval;
+
+            // Scroll to top of result board
+            document.getElementById('result-board').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Filter Questions (All vs Wrong)
+        function filterQuestions(mode) {
+            quizData.forEach(q => {
+                const card = document.getElementById(`q-card-${q.id}`);
+                const isCorrect = userAnswers[q.id] === q.answer;
+
+                if (mode === 'wrong') {
+                    if (isCorrect) {
+                        card.classList.add('hidden');
+                    } else {
+                        card.classList.remove('hidden');
+                    }
+                } else {
+                    card.classList.remove('hidden');
+                }
+            });
+
+            // Update Active Button Style
+            const btnAll = document.getElementById('btn-show-all');
+            const btnWrong = document.getElementById('btn-show-wrong');
+
+            if (mode === 'wrong') {
+                btnWrong.className = "px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg shadow transition";
+                btnAll.className = "px-4 py-2 bg-gray-100 text-gray-700 text-sm font-semibold rounded-lg border border-gray-300 hover:bg-gray-200 transition";
+            } else {
+                btnAll.className = "px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg shadow transition";
+                btnWrong.className = "px-4 py-2 bg-red-100 text-red-700 text-sm font-semibold rounded-lg border border-red-200 hover:bg-red-200 transition";
+            }
+        }
+
+        // Page Load Init
+        window.onload = () => {
+            renderQuiz();
+            startTimer();
+        };
+    </script>
+</body>
+</html>
